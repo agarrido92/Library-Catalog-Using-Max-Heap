@@ -1,0 +1,5 @@
+# login credentials excluded
+.env
+
+# target folder excluded
+app/target/
