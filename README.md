@@ -47,6 +47,10 @@ Complete Docker Compose setup including:
 * Ready for table creation and bulk data population.
 * pgAdmin connection successfully validated.
 
+✔ Database Data and Tables
+* Dummy data created to be added to the database
+* Script created to copy csv data into tables in the database
+
 ✔ Application Scaffold
 
 * Java runtime environment is prepared in its own container.
@@ -86,22 +90,23 @@ Andrea Garrido Menacho:
 ---
 ## Technologies Used
 
-| Category      | Technology  |
-| ------------- | ----------- |
-| Container     | Docker      |
-| Application   | Java        |
-| Database      | Postgres    |
-| DB Management | pgAdmin     |
+| Category      | Technology           |
+| ------------- | -------------------- |
+| Container     | Docker               |
+| Application   | Java                 |
+| Database      | Postgres             |
+| DB Management | pgAdmin              |
+| Dummy Data    | Python Faker Library |
 
 ---
 
 ## Pending Tasks
 
-1. Database Initialization (init.sql)
-  * Create and populate three tables with:
-    * 100 records
-    * 1,000 records
-    * 10,000 records
+1. Database Initialization (init.sql) **(COMPLETED)**
+  * ~~Create and populate three tables with:~~  
+    * ~~100 records~~
+    * ~~1,000 records~~
+    * ~~10,000 records~~
   * Used for performance testing of the heap operations.
 
 2. Max Heap Implementation (Java)
