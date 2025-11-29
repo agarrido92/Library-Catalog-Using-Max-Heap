@@ -8,6 +8,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d:ro
     ports:
       - "5432:5432"
 
@@ -23,6 +24,8 @@ services:
       - postgres
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin/servers.json:/var/lib/pgadmin/servers.json
+      - ./pgadmin/pgpass:/pgpass
 
   app:
     build:

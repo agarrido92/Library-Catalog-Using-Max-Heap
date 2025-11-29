@@ -3,3 +3,8 @@
 
 # target folder excluded
 app/target/
+
+# pgadmin server setup excluded
+pgadmin/servers.json
+
+pgadmin/pgpass
