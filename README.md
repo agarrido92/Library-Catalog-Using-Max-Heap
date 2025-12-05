@@ -14,8 +14,6 @@ This project implements a library catalog system designed to analyze search freq
 
 The system is fully containerized with Docker, including separate services for the Java application, PostgreSQL database, and pgAdmin for database inspection. This ensures a clean, repeatable environment for building, running, and testing the project.
 
-Although this is a group project, all current technical contributions—including environment setup and containerization—have been completed by me.
-
 ---
 
 ## Purpose of the Project
@@ -41,7 +39,7 @@ Complete Docker Compose setup including:
 * All services communicate over a shared Docker network.
 * Database persistence supported via Docker volumes.
 
-✔ Database Structure (Base Setup)
+✔ Database Structure
 
 * PostgreSQL container is operational and configured.
 * Ready for table creation and bulk data population.
@@ -65,7 +63,7 @@ Prerequisites:
 * Docker Compose
   
 Startup:
-* docker compose up --build
+* docker compose up -d
 
 
 Once running:
