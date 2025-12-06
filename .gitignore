@@ -1,1 +1,14 @@
+
 /bin/
+
+# login credentials excluded
+.env
+
+# target folder excluded
+app/target/
+
+# pgadmin server setup excluded
+pgadmin/servers.json
+
+pgadmin/pgpass
+
