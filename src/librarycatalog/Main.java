@@ -19,10 +19,7 @@ public class Main {
             System.out.print("Enter author: ");
             String author = scanner.nextLine();
 
-            System.out.print("Enter publication year: ");
-            int year = Integer.parseInt(scanner.nextLine());
-
-            Book book = new Book(title, author, year);
+            Book book = new Book(title, author);
             catalog.insert(book);
             heap.addBook(book);
 
@@ -31,8 +28,8 @@ public class Main {
 
         System.out.println("\n=== Library Catalog (BST, sorted by title) ===");
         catalog.printCatalog();
+        System.out.println("\nMost recently added book:");
+        System.out.println(heap.getNewestBook());
 
-        System.out.println("\n=== Books sorted by year (Max-Heap, newest first) ===");
-        heap.printYear();
     }
 }
