@@ -20,13 +20,6 @@ class Book {
         this.searchCount = searchCount;
     }
 
-    Book(int id, String title, String author, int year) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.year = year;
-    }
-
     @Override
     public String toString() {
         return "Book ID " + id + " — \"" + (title == null ? "Unknown" : title) + "\" by "
@@ -141,6 +134,8 @@ class MaxHeap {
 
 public class Main {
 
+    private static String activeTable = "catalog_100"; 
+
     private static Connection getConnection() throws SQLException {
         String host = System.getenv("DATABASE_HOST");
         String port = System.getenv("DATABASE_PORT");
@@ -155,7 +150,7 @@ public class Main {
     private static MaxHeap buildHeapFromDB(Connection conn) throws SQLException {
         MaxHeap heap = new MaxHeap();
 
-        String sql = "SELECT id, title, author, year, search_count FROM catalog_100";
+        String sql = "SELECT id, title, author, year, search_count FROM " + activeTable;
 
         try (PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery()) {
@@ -176,7 +171,7 @@ public class Main {
     }
 
     private static boolean incrementSearchCount(Connection conn, int id) throws SQLException {
-        String sql = "UPDATE catalog_100 SET search_count = search_count + 1 WHERE id = ?";
+        String sql = "UPDATE " + activeTable + " SET search_count = search_count + 1 WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             int updated = ps.executeUpdate();
@@ -185,7 +180,7 @@ public class Main {
     }
     
     private static Book getBookById(Connection conn, int id) throws SQLException {
-        String sql = "SELECT id, title, author, year, search_count FROM catalog_100 WHERE id = ?";
+        String sql = "SELECT id, title, author, year, search_count FROM " + activeTable + " WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -203,7 +198,32 @@ public class Main {
         return null;
     }
 
+    private static Book addBookToCatalog(Connection conn, MaxHeap heap, String title, String author, int year) throws SQLException {
+        String sql = "INSERT INTO " + activeTable +
+                    " (title, author, year, search_count) VALUES (?, ?, ?, 0) RETURNING id";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, title);
+            ps.setString(2, author);
+            ps.setInt(3, year);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int id = rs.getInt("id");
+                    int searchCount = 0; 
+
+                    Book newBook = new Book(id, title, author, year, searchCount);
+                    heap.insert(newBook);
+                    return newBook;
+                } else {
+                    throw new SQLException("INSERT did not return an id");
+                }
+            }
+        }
+    }
+
     public static void main(String[] args) {
+        
         System.out.println("Starting Java app. Waiting for DB...");
 
         int attempts = 0;
@@ -221,13 +241,17 @@ public class Main {
 
                     System.out.println("Welcome to the Library Catalog. Please select from the options below.");
                     System.out.println("1) Book Search");
-                    System.out.println("2) Most Searched");
+                    System.out.println("2) Add a Book");
+                    System.out.println("3) Remove a Book");
+                    System.out.println("4) Most Searched");
+                    System.out.println("5) Change Dataset");
                     System.out.println("0) Exit");
+                    System.out.print("Choice: ");
 
                     int val = scanner.nextInt();
 
                     if(val == 1){
-                        System.out.println("Please enter the ID of the book to search: ");
+                        System.out.print("Please enter the ID of the book to search: ");
                         int id = scanner.nextInt();
                         
                         boolean result = incrementSearchCount(conn, id);
@@ -252,6 +276,37 @@ public class Main {
 
                     }
                     else if(val == 2){
+                        try {
+                            scanner.nextLine();
+                            System.out.print("Enter title: ");
+                            String title = scanner.nextLine().trim();
+
+                            System.out.print("Enter author: ");
+                            String author = scanner.nextLine().trim();
+
+                            System.out.print("Enter year (e.g. 1999): ");
+                            String yearStr = scanner.nextLine().trim();
+                            int year;
+                            try {
+                                year = Integer.parseInt(yearStr);
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid year, must be a number.");
+                                break;
+                            }
+
+                            Book newBook = addBookToCatalog(conn, heap, title, author, year);
+
+                            System.out.println("New book added:");
+                            System.out.println(newBook);
+
+                        } catch (SQLException e) {
+                            System.out.println("Error adding book: " + e.getMessage());
+                        }
+                    }
+                    else if(val == 3){
+
+                    }
+                    else if(val == 4){
                         Book top = heap.getMaxHeap();
                         if (top == null) {
                             System.out.println("Heap is empty (no books).");
@@ -260,7 +315,30 @@ public class Main {
                             System.out.println(top);
                         }
                     }
+                    else if(val == 5){
+                        System.out.println("Please enter your choice: ");
+                        System.out.println("1) 100 dataset");
+                        System.out.println("2) 1,000 dataset");
+                        System.out.println("3) 10,000 dataset");
+                        int id = scanner.nextInt();
+                        if(id == 1){
+                            activeTable = "catalog_100";
+                        }
+                        else if(id == 2){
+                            activeTable = "catalog_1000";
+                        }
+                        else if(id == 3){
+                            activeTable = "catalog_10000";
+                        }
+                        else{
+                            System.out.println("Option does not exist.");
+                        }
+
+                        System.out.println("Current dataset is " + activeTable);
+                        heap = buildHeapFromDB(conn);
+                    }
                     else{
+                        System.out.println("Goodbye!");
                         break;
                     }
                 }
