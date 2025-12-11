@@ -1,12 +1,13 @@
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+FROM maven:3.9.6-eclipse-temurin-17
+
 WORKDIR /usr/src/app
+
+# Copy pom and preload dependencies (faster rebuilds)
 COPY pom.xml .
 RUN mvn -q -B dependency:go-offline
-COPY . .
-RUN mvn -q -B package -DskipTests
 
-FROM eclipse-temurin:17-jdk-jammy
-WORKDIR /usr/src/app
-COPY --from=build /usr/src/app/target /usr/src/app/target
-COPY --from=build /usr/src/app/pom.xml /usr/src/app/pom.xml
-CMD ["bash", "-c", "mvn -q -f /usr/src/app/pom.xml compile exec:java -Dexec.mainClass=com.example.library.Main"]
+# Copy source code
+COPY . .
+
+# Run the app using Maven exec plugin
+CMD ["mvn", "-q", "-B", "clean", "compile", "exec:java", "-Dexec.mainClass=com.example.library.Main"]

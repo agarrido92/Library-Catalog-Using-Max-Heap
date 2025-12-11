@@ -39,9 +39,6 @@ services:
       - DATABASE_NAME=${POSTGRES_DB}
       - DATABASE_USER=${POSTGRES_USER}
       - DATABASE_PASSWORD=${POSTGRES_PW}
-    volumes:
-      - ./app:/usr/src/app   # development bind mount
-    command: ["bash", "-c", "mvn -q -f /usr/src/app/pom.xml compile exec:java -Dexec.mainClass=com.example.library.Main"]
     ports:
       - "8080:8080"
 
