@@ -30,7 +30,7 @@ class Book {
     @Override
     public String toString() {
         return "Book ID " + id + " — \"" + (title == null ? "Unknown" : title) + "\" by "
-                + (author == null ? "Unknown" : author) + " (" + year + ") with 2" + searchCount + " searches.";
+                + (author == null ? "Unknown" : author) + " (" + year + ") with " + searchCount + " searches.";
     }
 }
 
@@ -175,7 +175,6 @@ public class Main {
         return heap;
     }
 
-
     private static boolean incrementSearchCount(Connection conn, int id) throws SQLException {
         String sql = "UPDATE catalog_100 SET search_count = search_count + 1 WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -183,7 +182,26 @@ public class Main {
             int updated = ps.executeUpdate();
             return updated > 0;
         }
-    }    
+    }
+    
+    private static Book getBookById(Connection conn, int id) throws SQLException {
+        String sql = "SELECT id, title, author, year, search_count FROM catalog_100 WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Book(
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getInt("year"),
+                        rs.getInt("search_count")
+                    );
+                }
+            }
+        }
+        return null;
+    }
 
     public static void main(String[] args) {
         System.out.println("Starting Java app. Waiting for DB...");
@@ -216,6 +234,17 @@ public class Main {
                         
                         if(result){
                             System.out.println("Increment succeeded.");
+
+                            Book searched = getBookById(conn, id);
+
+                            if (searched != null) {
+                                System.out.println("You searched for:");
+                                System.out.println(searched);
+                            } else {
+                                System.out.println("Search count updated, but book not found.");
+                            }
+
+                            heap = buildHeapFromDB(conn);
                         }
                         else{
                             System.out.println("Increment failed.");
