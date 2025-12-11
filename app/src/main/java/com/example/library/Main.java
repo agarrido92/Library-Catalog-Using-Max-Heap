@@ -5,18 +5,47 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+class Book {
+    int id;
+    String title;
+    String author;
+    int year;
+    int searchCount = 0;
+
+    Book(int id, String title, String author, int year, int searchCount) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.year = year;
+        this.searchCount = searchCount;
+    }
+
+    Book(int id, String title, String author, int year) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.year = year;
+    }
+
+    @Override
+    public String toString() {
+        return "Book ID " + id + " — \"" + (title == null ? "Unknown" : title) + "\" by "
+                + (author == null ? "Unknown" : author) + " (" + year + ") with 2" + searchCount + " searches.";
+    }
+}
+
 class MaxHeap {
-    private int[] heapArray;
+    private Book[] heapArray;
     private int heapSize;
 
     public MaxHeap() {
-        heapArray = new int[2];
+        heapArray = new Book[2];
         heapSize = 0;
     }
    
     private void resizeArray() {
         int newLength = heapArray.length * 2;
-        int[] newArray = new int[newLength];
+        Book[] newArray = new Book[newLength];
         if (newArray != null) {
             for (int i = 0; i < heapArray.length; i++) {
                 newArray[i] = heapArray[i];
@@ -27,50 +56,43 @@ class MaxHeap {
    
     private void percolateUp(int nodeIndex) {
         while (nodeIndex > 0) {
-            int parentIndex = (nodeIndex - 1) / 2;
-                
-            if (heapArray[nodeIndex] <= heapArray[parentIndex]) {
-                return;
-            }
-            else {
-                int temp = heapArray[nodeIndex];
-                heapArray[nodeIndex] = heapArray[parentIndex];
-                heapArray[parentIndex] = temp;
-                
-                nodeIndex = parentIndex;
+            int parentIdx = (nodeIndex - 1) / 2;
+            if (heapArray[nodeIndex].searchCount > heapArray[parentIdx].searchCount) {
+                Book temp = heapArray[nodeIndex];
+                heapArray[nodeIndex] = heapArray[parentIdx];
+                heapArray[parentIdx] = temp;
+                nodeIndex = parentIdx;
+            } else {
+                break;
             }
         }
     }
    
     private void percolateDown(int nodeIndex) {
-        int childIndex = 2 * nodeIndex + 1;
-        int value = heapArray[nodeIndex];
+        while (true) {
+            int left = nodeIndex * 2 + 1;
+            int right = nodeIndex * 2 + 2;
+            int largest = nodeIndex;
 
-        while (childIndex < heapSize) {
-            int maxValue = value;
-            int maxIndex = -1;
-            for (int i = 0; i < 2 && i + childIndex < heapSize; i++) {
-                if (heapArray[i + childIndex] > maxValue) {
-                    maxValue = heapArray[i + childIndex];
-                    maxIndex = i + childIndex;
-                }
+            if (left < heapSize && heapArray[left].searchCount > heapArray[largest].searchCount) {
+                largest = left;
+            }
+            if (right < heapSize && heapArray[right].searchCount > heapArray[largest].searchCount) {
+                largest = right;
             }
 
-            if (maxValue == value) {
-                return;
-            }
-            else {
-                int temp = heapArray[nodeIndex];
-                heapArray[nodeIndex] = heapArray[maxIndex];
-                heapArray[maxIndex] = temp;
-                
-                nodeIndex = maxIndex;
-                childIndex = 2 * nodeIndex + 1;
+            if (largest != nodeIndex) {
+                Book temp = heapArray[nodeIndex];
+                heapArray[nodeIndex] = heapArray[largest];
+                heapArray[largest] = temp;
+                nodeIndex = largest;
+            } else {
+                break;
             }
         }
     }
    
-    public void insert(int value) {
+    public void insert(Book value) {
         if (heapSize == heapArray.length) {
             resizeArray();
         }
@@ -81,18 +103,16 @@ class MaxHeap {
         percolateUp(heapSize - 1);
     }
    
-    public int remove() {
-        int maxValue = heapArray[0];
-    
-        int replaceValue = heapArray[heapSize - 1];
-        heapSize--;
-        if (heapSize > 0) {
-            heapArray[0] = replaceValue;
+    public Book remove() {
+        if (heapSize == 0) return null;
 
-            percolateDown(0);
-        }
-                    
-        return maxValue;
+        Book root = heapArray[0];
+        heapArray[0] = heapArray[heapSize - 1];
+        heapArray[heapSize - 1] = null;
+        heapSize--;
+
+        percolateDown(0);
+        return root;
     }
    
     public String getHeapArrayString() {
@@ -107,7 +127,10 @@ class MaxHeap {
         return arrayString + "]";
     }
 
-    public int getMaxHeap(){
+    public Book getMaxHeap(){
+        if(heapSize == 0){
+            return null;
+        }
         return heapArray[0];
     }
    
@@ -131,16 +154,27 @@ public class Main {
 
     private static MaxHeap buildHeapFromDB(Connection conn) throws SQLException {
         MaxHeap heap = new MaxHeap();
-        String sql = "SELECT search_count FROM catalog_100";
+
+        String sql = "SELECT id, title, author, year, search_count FROM catalog_100";
+
         try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+            ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
-                int count = rs.getInt("search_count");
-                heap.insert(count);
+                int id = rs.getInt("id");
+                String title = rs.getString("title");
+                String author = rs.getString("author");
+                int year = rs.getInt("year");
+                int searchCount = rs.getInt("search_count");
+
+                Book b = new Book(id, title, author, year, searchCount);
+                heap.insert(b);
             }
         }
+
         return heap;
     }
+
 
     private static boolean incrementSearchCount(Connection conn, int id) throws SQLException {
         String sql = "UPDATE catalog_100 SET search_count = search_count + 1 WHERE id = ?";
@@ -189,7 +223,13 @@ public class Main {
 
                     }
                     else if(val == 2){
-                        System.out.println("Current max search count: " + heap.getMaxHeap());
+                        Book top = heap.getMaxHeap();
+                        if (top == null) {
+                            System.out.println("Heap is empty (no books).");
+                        } else {
+                            System.out.println("Most searched book:");
+                            System.out.println(top);
+                        }
                     }
                     else{
                         break;
