@@ -1,6 +1,4 @@
 
-/bin/
-
 # login credentials excluded
 .env
 
