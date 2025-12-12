@@ -93,7 +93,14 @@ Andrea Garrido Menacho:
   * Organized project structure for future heap integration
   * Prepared workflow for performance benchmarking using multiple dataset sizes
   * Included max heap code to integrate with the rest of the project
-  * Tested of all parts of the project
+* Tested of all parts of the project
+
+Quinten Cestone
+* Presentation development
+* Data collection for database
+
+Tatnaiyah Bowers
+* Max heap code in binary search format
 
 ---
 ## Technologies Used
