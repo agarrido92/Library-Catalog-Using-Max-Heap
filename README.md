@@ -63,14 +63,20 @@ Prerequisites:
 
 * Docker
 * Docker Compose
+* .env file
+* pgadmin/servers.json file
+* pgadmin/pgpass file
+* init.sh sent to LF instead of CRLF
   
 Startup:
-* docker compose up --build
+* docker compose up -d postgres pgadmin
+* docker compose build --no-cache app
+* docker compose run --rm app
 
 
 Once running:
 
-* Java App: Launches inside its container (heap logic pending).
+* Java App: Launches inside its container.
 * PostgreSQL: Accessible via configured port.
 * pgAdmin: Browser interface available for database inspection.
 
@@ -86,6 +92,8 @@ Andrea Garrido Menacho:
   * Verified container communication
   * Organized project structure for future heap integration
   * Prepared workflow for performance benchmarking using multiple dataset sizes
+  * Included max heap code to integrate with the rest of the project
+  * Tested of all parts of the project
 
 ---
 ## Technologies Used
@@ -109,13 +117,13 @@ Andrea Garrido Menacho:
     * ~~10,000 records~~
   * Used for performance testing of the heap operations.
 
-2. Max Heap Implementation (Java)
- * Build a max heap using a binary search tree approach
- * Track search counts for books
- * Return the most searched book efficiently
- * Integrate with PostgreSQL to fetch/update search frequency
+2. Max Heap Implementation (Java) **(COMPLETED)**
+ * ~~Build a max heap~~
+ * ~~Track search counts for books~~
+ * ~~Return the most searched book efficiently~~
+ * ~~Integrate with PostgreSQL to fetch/update search frequency~~
 
-3. Front-End UI (Optional)
+3. Front-End UI (Optional) **(NOT COMPLETED DUE TO LACK OF TIME)**
   * A lightweight UI to:
     * Execute searches
     * Display top-searched books

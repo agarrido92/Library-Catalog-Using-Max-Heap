@@ -97,15 +97,49 @@ class MaxHeap {
     }
    
     public Book remove() {
-        if (heapSize == 0) return null;
+        if (heapSize == 0) {
+            return null;
+        }
 
+        // Save the root (max element)
         Book root = heapArray[0];
+
+        // Move last element to the root position
         heapArray[0] = heapArray[heapSize - 1];
         heapArray[heapSize - 1] = null;
         heapSize--;
 
-        percolateDown(0);
+        // Restore heap property from the root down
+        if (heapSize > 0) {
+            percolateDown(0);
+        }
+
         return root;
+    }
+
+    public boolean deleteById(int id) {
+        int index = -1;
+        for (int i = 0; i < heapSize; i++) {
+            if (heapArray[i].id == id) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            return false; 
+        }
+
+        heapArray[index] = heapArray[heapSize - 1];
+        heapArray[heapSize - 1] = null;
+        heapSize--;
+
+        if (heapSize > 0 && index < heapSize) {
+            percolateDown(index);
+            percolateUp(index);
+        }
+
+        return true;
     }
    
     public String getHeapArrayString() {
@@ -222,6 +256,15 @@ public class Main {
         }
     }
 
+    private static boolean deleteBookFromCatalog(Connection conn, int id) throws SQLException {
+        String sql = "DELETE FROM " + activeTable + " WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            int deleted = ps.executeUpdate();
+            return deleted > 0;
+        }
+    }
+
     public static void main(String[] args) {
         
         System.out.println("Starting Java app. Waiting for DB...");
@@ -304,7 +347,34 @@ public class Main {
                         }
                     }
                     else if(val == 3){
+                        scanner.nextLine();
+                        System.out.print("Enter book id to remove: ");
+                        String idStr = scanner.nextLine().trim();
+                        int id;
+                        try {
+                            id = Integer.parseInt(idStr);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid id, must be a number.");
+                            continue;
+                        }
 
+                        try {
+                            boolean deletedFromDb = deleteBookFromCatalog(conn, id);
+                            if (!deletedFromDb) {
+                                System.out.println("No book found in " + activeTable + " with id " + id);
+                                continue;
+                            }
+
+                            boolean deletedFromHeap = heap.deleteById(id);
+                            if (!deletedFromHeap) {
+                                System.out.println("Book was removed from DB but not found in heap (possible heap out of sync).");
+                            } else {
+                                System.out.println("Book " + id + " removed from DB and heap.");
+                            }
+
+                        } catch (SQLException e) {
+                            System.out.println("Error removing book: " + e.getMessage());
+                        }
                     }
                     else if(val == 4){
                         Book top = heap.getMaxHeap();
