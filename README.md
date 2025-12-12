@@ -4,7 +4,7 @@ Course: SENG 2000 – Advanced Data Structures
 
 Institution: East Carolina University
 
-Status: Work in Progress (Target Completion: December 12, 2025)
+Status: Completed (Target Completion: December 12, 2025)
 
 ---
 
@@ -66,7 +66,7 @@ Prerequisites:
 * .env file
 * pgadmin/servers.json file
 * pgadmin/pgpass file
-* init.sh sent to LF instead of CRLF
+* init.sh set to LF instead of CRLF
   
 Startup:
 * docker compose up -d postgres pgadmin
@@ -128,5 +128,5 @@ Andrea Garrido Menacho:
     * Execute searches
     * Display top-searched books
 
-4. Run performance tests
-  * Would improve usability and streamline demos.
+4. Run performance tests **(COMPLETED)**
+  * ~~Would improve usability and streamline demos.~~
