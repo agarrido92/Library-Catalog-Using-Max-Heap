@@ -86,6 +86,9 @@ class MaxHeap {
     }
    
     public void insert(Book value) {
+
+        long startTime = System.nanoTime();
+
         if (heapSize == heapArray.length) {
             resizeArray();
         }
@@ -94,25 +97,38 @@ class MaxHeap {
         heapSize++;
         
         percolateUp(heapSize - 1);
+
+        long endTime = System.nanoTime();
+
+        long durationInNano = endTime - startTime;
+        long durationInMillis = durationInNano / 1000000;
+
+        System.out.println("Execution time of inserting into heap (in milliseconds): " + durationInMillis);
     }
    
     public Book remove() {
+        long startTime = System.nanoTime();
+
         if (heapSize == 0) {
             return null;
         }
 
-        // Save the root (max element)
         Book root = heapArray[0];
 
-        // Move last element to the root position
         heapArray[0] = heapArray[heapSize - 1];
         heapArray[heapSize - 1] = null;
         heapSize--;
 
-        // Restore heap property from the root down
         if (heapSize > 0) {
             percolateDown(0);
         }
+
+        long endTime = System.nanoTime();
+
+        long durationInNano = endTime - startTime;
+        long durationInMillis = durationInNano / 1000000;
+
+        System.out.println("Execution time of removing from heap (in milliseconds): " + durationInMillis);
 
         return root;
     }
@@ -183,6 +199,7 @@ public class Main {
 
     private static MaxHeap buildHeapFromDB(Connection conn) throws SQLException {
         MaxHeap heap = new MaxHeap();
+        long startTime =  System.nanoTime();
 
         String sql = "SELECT id, title, author, year, search_count FROM " + activeTable;
 
@@ -200,6 +217,12 @@ public class Main {
                 heap.insert(b);
             }
         }
+        long endTime =  System.nanoTime();
+        
+        long durationInNano = endTime - startTime;
+        long durationInMillis = durationInNano / 1000000;
+
+        System.out.println("Execution time of creating the heap (in milliseconds): " + durationInMillis);
 
         return heap;
     }
